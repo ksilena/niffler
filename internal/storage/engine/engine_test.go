@@ -29,7 +29,7 @@ func TestGet(t *testing.T) {
 			name:     "empty key",
 			key:      "",
 			expected: "",
-			err:      errKeyIsEmpty,
+			err:      errDataNotFound,
 		},
 	}
 
@@ -40,7 +40,12 @@ func TestGet(t *testing.T) {
 
 			result, err := db.Get(tt.key)
 
-			require.Equal(t, tt.err, err)
+			if tt.err != nil {
+				require.EqualError(t, tt.err, err.Error())
+			} else {
+				require.NoError(t, err)
+			}
+
 			require.Equal(t, tt.expected, result)
 		})
 	}
@@ -75,9 +80,10 @@ func TestSet(t *testing.T) {
 
 			err := db.Set(tt.key, tt.value)
 
-			require.Equal(t, tt.err, err)
-
-			if err == nil {
+			if tt.err != nil {
+				require.EqualError(t, tt.err, err.Error())
+			} else {
+				require.NoError(t, err)
 				res, err := db.Get(tt.key)
 				require.Nil(t, err)
 				require.Equal(t, tt.value, res)
@@ -99,11 +105,6 @@ func TestDel(t *testing.T) {
 			expected: "value",
 			err:      nil,
 		},
-		{
-			name: "empty key",
-			key:  "",
-			err:  errKeyIsEmpty,
-		},
 	}
 
 	for _, tt := range tests {
@@ -111,14 +112,10 @@ func TestDel(t *testing.T) {
 			db := New()
 			db.data["key"] = "value"
 
-			err := db.Del(tt.key)
+			db.Del(tt.key)
 
-			require.Equal(t, tt.err, err)
-
-			if err == nil {
-				_, err = db.Get(tt.key)
-				require.Equal(t, err, errDataNotFound)
-			}
+			_, err := db.Get(tt.key)
+			require.EqualError(t, err, errDataNotFound.Error())
 		})
 	}
 }

@@ -2,9 +2,9 @@ package main
 
 import (
 	"bufio"
-	"flag"
 	"fmt"
 	"log/slog"
+	"niffler/internal/compute/parser"
 	"niffler/internal/service"
 	"niffler/internal/storage/engine"
 	"os"
@@ -13,7 +13,6 @@ import (
 )
 
 func main() {
-	flag.Parse()
 	logger, err := zap.NewDevelopment()
 	if err != nil {
 		slog.Error("create logger", "err", err)
@@ -22,8 +21,9 @@ func main() {
 	defer logger.Sync()
 
 	db := engine.New()
+	parser := parser.New()
 
-	svc := service.New(db, logger)
+	svc := service.New(logger, db, parser)
 
 	scanner := bufio.NewScanner(os.Stdin)
 

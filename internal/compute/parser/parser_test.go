@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestParse(t *testing.T) {
+func TestParser_Parse(t *testing.T) {
 	tests := []struct {
 		name     string
 		input    string
@@ -84,7 +84,8 @@ func TestParse(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := Parse(tt.input)
+			parser := New()
+			result, err := parser.Parse(tt.input)
 
 			if tt.err != nil {
 				require.Error(t, err)

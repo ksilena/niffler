@@ -1,12 +1,19 @@
 PROJECT_NAME := niffler
 SEED := on
 
-.PHONY: build
-build:
+.PHONY: build.cli
+build.cli:
 	CGO_ENABLED=0 go build -o ./${PROJECT_NAME}-cli cmd/cli/main.go
 
-.PHONY: run
-run: build
+.PHONY: build.db
+build.db:
+	CGO_ENABLED=0 go build -o ./${PROJECT_NAME} cmd/database/main.go
+
+.PHONY: build
+build: build.cli build.db
+
+.PHONY: run.cli
+run.cli: build.cli
 	./${PROJECT_NAME}-cli
 
 .PHONY: lint.install

@@ -9,18 +9,27 @@ import (
 
 var re = regexp.MustCompile(`^\w+$`)
 
+// minCommandParts - минимальное количество частей команды
+const minCommandParts = 2
+
 var (
 	errInvalidCommand = errors.New("invalid command")
 	errInvalidFormat  = errors.New("invalid format")
 )
 
+type Parser struct{}
+
+func New() *Parser {
+	return &Parser{}
+}
+
 // Parse преобразует строковую команду в структуру domain.Command.
 // Разбивает входную строку на отдельные части и проверяет каждую на соответствие
 // регулярному выражению. После чего формирует структуру команды, состоящую из
 // имени команды и её аргументов.
-func Parse(cmd string) (*common.Command, error) {
+func (p *Parser) Parse(cmd string) (*common.Command, error) {
 	parts := strings.Fields(cmd)
-	if len(parts) <= 1 {
+	if len(parts) < minCommandParts {
 		return nil, errInvalidCommand
 	}
 

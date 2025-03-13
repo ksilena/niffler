@@ -20,15 +20,10 @@ func New() *DB {
 }
 
 // Get возвращает значение по указанному ключу.
-// Если ключ пустой, возвращает ErrKeyIsEmpty.
-// Если ключ не существует, возвращает ErrDataNotFound.
+// Если ключ не существует, возвращает errDataNotFound.
 func (d *DB) Get(key string) (string, error) {
-	if key == "" {
-		return "", errKeyIsEmpty
-	}
-
-	value := d.data[key]
-	if value == "" {
+	value, ok := d.data[key]
+	if !ok {
 		return "", errDataNotFound
 	}
 
@@ -36,7 +31,7 @@ func (d *DB) Get(key string) (string, error) {
 }
 
 // Set устанавливает значение для указанного ключа.
-// Если ключ пустой, возвращает ErrKeyIsEmpty.
+// Если ключ пустой, возвращает errKeyIsEmpty.
 func (d *DB) Set(key, value string) error {
 	if key == "" {
 		return errKeyIsEmpty
@@ -48,13 +43,6 @@ func (d *DB) Set(key, value string) error {
 }
 
 // Del удаляет значение по указанному ключу.
-// Если ключ пустой, возвращает ErrKeyIsEmpty.
-func (d *DB) Del(key string) error {
-	if key == "" {
-		return errKeyIsEmpty
-	}
-
+func (d *DB) Del(key string) {
 	delete(d.data, key)
-
-	return nil
 }

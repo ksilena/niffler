@@ -14,6 +14,13 @@ const (
 
 var (
 	errWrongArgsCount = errors.New("invalid args count")
+	errUnknownCmdType = errors.New("unknown command type")
+
+	argsCount = map[CommandType]int{
+		GetCommand: 1,
+		SetCommand: 2,
+		DelCommand: 1,
+	}
 )
 
 // Ошибки, используемые в валидации команд.
@@ -22,17 +29,15 @@ type Command struct {
 	Args []string
 }
 
-// Valid проверяет корректность команды:
-// для SET требуется ровно 2 аргумента;
-// для остальных команд требуется 1 аргумент.
+// Valid проверяет корректность команды.
 // Возвращает true, если команда валидна, и ошибку в противном случае.
 func (c *Command) Valid() (bool, error) {
-	argsLen := 1
-	if c.Name == SetCommand {
-		argsLen = 2
+	cnt, ok := argsCount[c.Name]
+	if !ok {
+		return false, errUnknownCmdType
 	}
 
-	if len(c.Args) != argsLen {
+	if len(c.Args) != cnt {
 		return false, errWrongArgsCount
 	}
 

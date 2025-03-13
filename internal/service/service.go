@@ -1,9 +1,10 @@
 package service
 
+//go:generate mockery --all --output . --inpackage
+
 import (
 	"errors"
 	"niffler/internal/common"
-	"niffler/internal/compute/parser"
 
 	"go.uber.org/zap"
 )
@@ -12,20 +13,26 @@ import (
 type Storage interface {
 	Set(key string, value string) error
 	Get(key string) (string, error)
-	Del(key string) error
+	Del(key string)
+}
+
+type Parser interface {
+	Parse(cmd string) (*common.Command, error)
 }
 
 // Service представляет сервисный слой, который обрабатывает входящие сообщения,
 // используя парсер для анализа команд и хранилище для выполнения операций.
 type Service struct {
 	storage Storage
+	parser  Parser
 	logger  *zap.Logger
 }
 
 // New создает новый экземпляр сервиса с заданным хранилищем и логгером.
-func New(storage Storage, logger *zap.Logger) *Service {
+func New(logger *zap.Logger, storage Storage, parser Parser) *Service {
 	return &Service{
 		storage: storage,
+		parser:  parser,
 		logger:  logger,
 	}
 }
@@ -36,7 +43,7 @@ var (
 
 // Handle обрабатывает входящее сообщение от клиента.
 func (s *Service) Handle(msg string) (string, error) {
-	cmd, err := parser.Parse(msg)
+	cmd, err := s.parser.Parse(msg)
 	if err != nil {
 		return "", err
 	}
@@ -53,7 +60,8 @@ func (s *Service) Handle(msg string) (string, error) {
 		return "", s.storage.Set(cmd.Args[0], cmd.Args[1])
 
 	case common.DelCommand:
-		return "", s.storage.Del(cmd.Args[0])
+		s.storage.Del(cmd.Args[0])
+		return "", nil
 
 	default:
 		return "", errUnknownCmd
